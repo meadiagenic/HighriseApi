@@ -49,7 +49,6 @@ namespace Highrise {
                 return string.Empty;
             }
         }
-
         public string this[string attr] {
             get {
                 if (element == null) {

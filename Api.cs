@@ -22,13 +22,21 @@ namespace Highrise {
         /// Adds a person to Highrise. Edit the XML template as-needed to add more info
         /// </summary>
         public dynamic AddPerson(string first, string last, string email, params string[] tags) {
-            var url = string.Format(_baseUrl + "people.xml", email);
-            var xml = Templates.PersonBasic(first, last, email);
-            var response = Send(url, xml);
-            var p = ToDynamic(response);
-            if (tags.Length > 0)
-                AddTags(p, tags);
-            return ToDynamic(response);
+            
+            //do they exist?
+            var existing = GetPerson(email);
+            if (existing == null) {
+                var url = string.Format(_baseUrl + "people.xml", email);
+                var xml = Templates.PersonBasic(first, last, email);
+                var response = Send(url, xml);
+                var p = ToDynamic(response);
+                if (tags.Length > 0)
+                    AddTags(p, tags);
+                return ToDynamic(response);
+            } else {
+                AddTags(existing, tags);
+            }
+            return existing;
         }
 
         /// <summary>
@@ -45,13 +53,17 @@ namespace Highrise {
         /// Adds a note to a Customer's record
         /// </summary>
         public dynamic AddNote(string email, string note) {
-            var person = GetPerson(email);
-            var url = _baseUrl + "people/"+person.id+"/notes.xml";
+            return AddNote(GetPerson(email),note);
+        }
+        /// <summary>
+        /// Adds a note to a Customer's record
+        /// </summary>
+        public dynamic AddNote(dynamic person, string note) {
+            var url = _baseUrl + "people/" + person.id + "/notes.xml";
             var xml = Templates.NewNote(person.id, "", note);
             var response = Send(url, xml);
             return ToDynamic(response);
         }
-
         /// <summary>
         /// Tags a Customer
         /// </summary>
@@ -85,13 +97,23 @@ namespace Highrise {
         /// Uses the XMLHelper to wrap some XML in dynamic love - this helper will return the first element
         /// </summary>
         dynamic ToSingleDynamic(string xml) {
-            return new XmlHelper(ToXDoc(xml).Descendants().First().Descendants().First()); 
+            var doc = ToXDoc(xml);
+            if (doc.Descendants().Elements().Count() > 0) {
+                return new XmlHelper(doc.Descendants().First().Descendants().First());
+            } else {
+                return null;
+            }
         }
         /// <summary>
         /// Uses the XMLHelper to wrap some XML in dynamic love
         /// </summary>
         dynamic ToDynamic(string xml) {
-            return new XmlHelper(ToXDoc(xml).Descendants().First());
+            var doc = ToXDoc(xml);
+            if (doc.Descendants().Elements().Count() > 0) {
+                return new XmlHelper(doc.Descendants().First());
+            } else {
+                return null;
+            }
         }
         /// <summary>
         /// A simple GET request to the Highrise API
