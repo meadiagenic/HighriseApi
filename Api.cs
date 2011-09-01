@@ -48,7 +48,16 @@ namespace Highrise {
             var result = Send(url, verb: "GET");
             return ToSingleDynamic(result);
         }
-
+        public bool Destroy(string email) {
+            //DELETE /people/#{id}.xml
+            return Destroy(GetPerson(email).id);
+        }
+        public bool Destroy(int highriseID) {
+            //DELETE /people/#{id}.xml
+            var url = _baseUrl + "people/" + highriseID + ".xml";
+            Send(url, "", "DELETE");
+            return true;
+        }
         /// <summary>
         /// Adds a note to a Customer's record
         /// </summary>
