@@ -129,6 +129,7 @@ namespace Highrise {
         /// </summary>
         string Send(string url, string data="", string verb = "POST") {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+			request.PreAuthenticate = true;
             request.Method = verb;
             request.ContentType = "application/xml";
             
